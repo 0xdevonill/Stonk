@@ -13,13 +13,11 @@ import {
   fetchHolders,
   fetchStaking,
   fetchTokenomics,
-  nextActivity,
-  type ActivityItem,
   type ChartTimeframe,
 } from '../lib/api';
-import { contracts, tokenMeta } from '../lib/contracts/config';
-import { formatAddress, formatCompact, formatStatUsd, formatToken } from '../lib/format';
-import { projectedRewards } from '../lib/trade/quote';
+import { contracts } from '../lib/contracts/config';
+import { useAsset } from '../context/MarketContext';
+import { formatAddress, formatCompact, formatPrice, formatToken } from '../lib/format';
 import { Container } from '../components/layout/Container';
 import { SectionHead } from '../components/layout/SectionHead';
 import { PriceCard } from '../components/data/PriceCard';
@@ -59,6 +57,7 @@ const features = [
 export function HomePage() {
   usePageTitle('Home');
   const market = useMarket();
+  const asset = useAsset();
   const wallet = useWallet();
   const panel = usePanelProps();
   const [timeframe, setTimeframe] = useState<ChartTimeframe>('1D');
@@ -68,31 +67,21 @@ export function HomePage() {
   const earn = useQuery('home-earn', fetchEarn);
   const tokenomics = useQuery('home-tokenomics', fetchTokenomics);
   const activityQuery = useQuery('home-activity', fetchActivity);
-  const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    if (activityQuery.data) setActivity(activityQuery.data.items);
-  }, [activityQuery.data]);
-
-  useEffect(() => {
-    if (!activityQuery.data) return;
-    const timer = window.setInterval(() => {
-      const price = market.stats?.priceUsd ?? 0;
-      setActivity((current) => [nextActivity(price), ...current].slice(0, 12));
-      setNow(Date.now());
-    }, 7000);
+    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
     return () => window.clearInterval(timer);
-  }, [activityQuery.data, market.stats?.priceUsd]);
+  }, []);
 
   const stats = market.stats;
   const summary = stats
-    ? `${tokenMeta.displaySymbol} illustrative price ${formatStatUsd(stats.priceUsd)}, 24 hour change ${formatPct(stats.change24hPct)}.`
+    ? `${asset.displaySymbol} pool price ${formatPrice(stats.priceUsd)}, 24 hour change ${formatPct(stats.change24hPct)}.`
     : 'Price chart loading.';
 
   const panelProps = {
-    stonkPrice: panel.stonkPrice,
-    ethPrice: panel.ethPrice,
+    baseSymbol: panel.baseSymbol,
+    quoteSymbol: panel.quoteSymbol,
     balances: panel.balances,
     connected: panel.connected,
     networkOk: panel.networkOk,
@@ -108,8 +97,8 @@ export function HomePage() {
           <p className="eyebrow">Terminal</p>
           <h1 className="display-xl">The trading terminal for the internet&apos;s favorite asset class.</h1>
           <p className="hero-sub body-lg muted">
-            A desk for {tokenMeta.displaySymbol}. Quotes, swaps, and staking — with the numbers kept still until they
-            actually change.
+            A desk for {asset.displaySymbol}. Price, swaps, and trades are read from its contract. The numbers stay still
+            until the pool moves.
           </p>
           <div className="hero-actions">
             {wallet.account ? (
@@ -188,7 +177,7 @@ export function HomePage() {
       </section>
 
       <section>
-        <SectionHead eyebrow="Orders" title="Move $STONK" />
+        <SectionHead eyebrow="Orders" title={`Move ${asset.displaySymbol}`} />
         <div className="grid-2 grid-2-lg">
           <SwapPanel {...panelProps} />
           <TradingPanel {...panelProps} variant="buy-only" />
@@ -215,12 +204,12 @@ export function HomePage() {
             <div>
               <p className="eyebrow">Estimated APR</p>
               <p className="data-lg num">{formatPct(staking.data?.aprPct ?? null, false)}</p>
-              <p className="body-md muted">Estimated, not guaranteed. Lock {staking.data?.lockDays ?? '—'} days in the configured staking contract.</p>
+              <p className="body-md muted">This contract does not publish a staking APR.</p>
             </div>
             <div>
               <p className="eyebrow">Protocol staked</p>
               <p className="data-md num">{formatCompact(staking.data?.totalStaked ?? null)}</p>
-              <p className="caption faint">Illustrative. A day on 1,000 {tokenMeta.symbol} would show {formatToken(projectedRewards(1000, staking.data?.aprPct ?? null).daily)} estimated.</p>
+              <p className="caption faint">Stake reads stay empty until a staking contract for {asset.symbol || 'this token'} is configured.</p>
             </div>
           </article>
         </DataBoundary>
@@ -231,7 +220,9 @@ export function HomePage() {
         <DataBoundary
           loading={earn.loading}
           error={earn.error}
+          empty={(earn.data?.assets.length ?? 0) === 0}
           onRetry={earn.reload}
+          emptyState={<EmptyState icon={Wallet} message="This token does not publish an earn market." />}
           skeleton={
             <div className="h-scroll">
               {Array.from({ length: 4 }, (_, index) => (
@@ -266,8 +257,8 @@ export function HomePage() {
           <article className="card portfolio-teaser">
             <div>
               <p className="eyebrow">Wallet</p>
-              <p className="data-md num">{formatToken(wallet.account.balances.STONK)} STONK</p>
-              <p className="caption muted num">{formatToken(wallet.account.balances.ETH)} ETH</p>
+              <p className="data-md num">{formatToken(wallet.account.balances.STONK)} {asset.symbol || 'Token'}</p>
+              <p className="caption muted num">{formatToken(wallet.account.balances.ETH)} {asset.quoteSymbol || 'Quote'}</p>
             </div>
             <Link to="/portfolio" className="btn btn-secondary btn-md">
               Open portfolio
@@ -299,13 +290,13 @@ export function HomePage() {
         <DataBoundary
           loading={activityQuery.loading}
           error={activityQuery.error}
-          empty={activity.length === 0}
+          empty={(activityQuery.data?.items.length ?? 0) === 0}
           onRetry={activityQuery.reload}
           skeleton={<div className="card skeleton-block" />}
           emptyState={<EmptyState icon={Pulse} message="No prints yet. The tape is quiet." />}
         >
           <div className="card">
-            <ActivityFeed items={activity} now={now} />
+            <ActivityFeed items={activityQuery.data?.items ?? []} now={now} />
           </div>
         </DataBoundary>
       </section>
@@ -315,13 +306,15 @@ export function HomePage() {
         <DataBoundary
           loading={holders.loading}
           error={holders.error}
+          empty={(holders.data?.holders.length ?? 0) === 0}
           onRetry={holders.reload}
+          emptyState={<EmptyState icon={Pulse} message="This contract does not publish a holder index." />}
           skeleton={<div className="card skeleton-block" />}
         >
           <div className="card holder-preview">
             <TokenomicsChart slices={holders.data?.segments ?? []} />
             <DataTable
-              caption="Top holders, illustrative"
+              caption="Top holders"
               rows={(holders.data?.holders ?? []).slice(0, 5)}
               rowKey={(row) => row.address}
               columns={[
@@ -342,15 +335,16 @@ export function HomePage() {
 
       <section className="grid-2 grid-2-lg">
         <div>
-          <SectionHead eyebrow="Tokenomics" title="Draft allocation" />
+          <SectionHead eyebrow="Tokenomics" title="Supply" />
           <DataBoundary
             loading={tokenomics.loading}
             error={tokenomics.error}
+            empty={(tokenomics.data?.tokenomics.slices.length ?? 0) === 0}
             onRetry={tokenomics.reload}
+            emptyState={<EmptyState icon={Pulse} message="This contract publishes total supply, not an allocation split." />}
             skeleton={<div className="card skeleton-block" />}
           >
             <div className="card">
-              <p className="caption faint">Illustrative split — subject to the published token terms.</p>
               <TokenomicsChart slices={tokenomics.data?.tokenomics.slices ?? []} />
             </div>
           </DataBoundary>

@@ -41,7 +41,7 @@ export function ChartFrame({
   const lows = candles.map((candle) => candle.low);
   const max = highs.length ? Math.max(...highs) : 1;
   const min = lows.length ? Math.min(...lows) : 0;
-  const span = max - min || 1;
+  const span = max - min || Math.max(Math.abs(max) * 0.08, 1e-12);
   const maxVolume = Math.max(...candles.map((candle) => candle.volume), 1);
 
   const xAt = (index: number) => pad.left + (candles.length <= 1 ? plotWidth / 2 : (index / (candles.length - 1)) * plotWidth);

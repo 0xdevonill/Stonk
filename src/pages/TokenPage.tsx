@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '../hooks/useQuery';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { useMarket } from '../context/MarketContext';
+import { useAsset, useMarket } from '../context/MarketContext';
 import { fetchHolders, fetchTokenomics } from '../lib/api';
-import { contracts, tokenMeta } from '../lib/contracts/config';
+import { contracts } from '../lib/contracts/config';
 import { formatAddress, formatCompact } from '../lib/format';
 import { Container } from '../components/layout/Container';
 import { PriceCard } from '../components/data/PriceCard';
@@ -20,6 +20,7 @@ const utility = [
 export function TokenPage() {
   usePageTitle('Token');
   const market = useMarket();
+  const asset = useAsset();
   const tokenomics = useQuery('token-tokenomics', fetchTokenomics);
   const holders = useQuery('token-holders', fetchHolders);
   const stats = market.stats;
@@ -28,10 +29,10 @@ export function TokenPage() {
     <Container className="stack page-wrap">
       <header className="page-intro">
         <p className="eyebrow">Token</p>
-        <h1 className="heading-lg">{tokenMeta.name}</h1>
+        <h1 className="heading-lg">{asset.name}</h1>
         <p className="body-lg muted measure">
-          {tokenMeta.displaySymbol} is the asset this terminal is built around. Supply, addresses, and the draft allocation
-          live here. Prices on this page are illustrative.
+          {asset.displaySymbol} is the asset this terminal reads from {contracts.chainName}. Supply, the curve, and the
+          pool price come from that contract.
         </p>
       </header>
       <PriceCard
@@ -50,12 +51,14 @@ export function TokenPage() {
             </dd>
           </div>
           <div>
-            <dt>Staking</dt>
-            <dd className="num">{formatAddress(contracts.stakingAddress, 10, 8)}</dd>
+            <dt>Curve</dt>
+            <dd className="num">{stats?.curveAddress ? formatAddress(stats.curveAddress, 10, 8) : '--'}</dd>
           </div>
           <div>
-            <dt>Router</dt>
-            <dd className="num">{formatAddress(contracts.routerAddress, 10, 8)}</dd>
+            <dt>Quote</dt>
+            <dd className="num">
+              {stats?.quoteSymbol ?? '--'} {stats?.quoteToken ? formatAddress(stats.quoteToken, 10, 8) : ''}
+            </dd>
           </div>
           <div>
             <dt>Network</dt>
@@ -69,14 +72,28 @@ export function TokenPage() {
       </section>
       <section className="card">
         <h2 className="heading-md">Tokenomics</h2>
-        <p className="caption faint">Draft allocation. Not a final cap table.</p>
-        <DataBoundary loading={tokenomics.loading} error={tokenomics.error} onRetry={tokenomics.reload} skeleton={<div className="skeleton-block" />}>
+        <p className="caption faint">Only figures this contract publishes.</p>
+        <DataBoundary
+          loading={tokenomics.loading}
+          error={tokenomics.error}
+          empty={(tokenomics.data?.tokenomics.slices.length ?? 0) === 0}
+          onRetry={tokenomics.reload}
+          skeleton={<div className="skeleton-block" />}
+          emptyState={<p className="body-md muted">No allocation split is stored on this contract. Total supply is above.</p>}
+        >
           <TokenomicsChart slices={tokenomics.data?.tokenomics.slices ?? []} />
         </DataBoundary>
       </section>
       <section className="card">
         <h2 className="heading-md">Distribution</h2>
-        <DataBoundary loading={holders.loading} error={holders.error} onRetry={holders.reload} skeleton={<div className="skeleton-block" />}>
+        <DataBoundary
+          loading={holders.loading}
+          error={holders.error}
+          empty={(holders.data?.segments.length ?? 0) === 0}
+          onRetry={holders.reload}
+          skeleton={<div className="skeleton-block" />}
+          emptyState={<p className="body-md muted">This contract does not publish a holder distribution.</p>}
+        >
           <TokenomicsChart slices={holders.data?.segments ?? []} />
         </DataBoundary>
       </section>

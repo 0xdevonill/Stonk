@@ -1,14 +1,21 @@
 export const PLACEHOLDER_NUMBER = '--';
 export const PLACEHOLDER_PERCENT = 'XX%';
 
+function adaptiveDigits(abs: number): number {
+  if (abs >= 1000) return 2;
+  if (abs >= 0.01) return 4;
+  if (abs >= 0.0001) return 6;
+  if (abs === 0) return 2;
+  return Math.min(12, Math.ceil(-Math.log10(abs)) + 3);
+}
+
 export function formatPrice(value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value)) return PLACEHOLDER_NUMBER;
-  const abs = Math.abs(value);
-  const digits = abs >= 1000 ? 2 : abs >= 0.01 ? 4 : 6;
+  const digits = adaptiveDigits(Math.abs(value));
   return value.toLocaleString('en-US', {
     style: 'currency',
     currency: 'USD',
-    minimumFractionDigits: digits,
+    minimumFractionDigits: Math.min(digits, 2),
     maximumFractionDigits: digits,
   });
 }
@@ -44,7 +51,7 @@ export function formatCompact(value: number | null | undefined, digits = 2): str
 export function formatToken(value: number | null | undefined, digits?: number): string {
   if (value == null || !Number.isFinite(value)) return PLACEHOLDER_NUMBER;
   const abs = Math.abs(value);
-  const fraction = digits ?? (abs >= 1000 ? 2 : abs >= 1 ? 4 : 6);
+  const fraction = digits ?? adaptiveDigits(abs);
   return value.toLocaleString('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: fraction,
@@ -80,6 +87,16 @@ export function sanitizeAmount(raw: string): string {
   const dot = cleaned.indexOf('.');
   if (dot === -1) return cleaned;
   return `${cleaned.slice(0, dot + 1)}${cleaned.slice(dot + 1).replace(/\./g, '')}`;
+}
+
+export function trimAmount(value: number): string {
+  if (!Number.isFinite(value)) return '';
+  const abs = Math.abs(value);
+  if (abs === 0) return '0';
+  if (abs >= 1000) return value.toFixed(2);
+  if (abs >= 1) return value.toFixed(4);
+  if (abs >= 0.000001) return value.toFixed(6);
+  return value.toPrecision(6);
 }
 
 export function parseAmount(raw: string): number | null {

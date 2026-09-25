@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTradeSettings } from '../../context/TradeSettingsContext';
-import { formatToken, parseAmount, sanitizeAmount, PLACEHOLDER_NUMBER } from '../../lib/format';
-import { GAS_RESERVE_ETH, quoteSwap } from '../../lib/trade/quote';
+import { formatToken, parseAmount, sanitizeAmount, trimAmount, PLACEHOLDER_NUMBER } from '../../lib/format';
 import type { OrderDraft } from '../../lib/trade/fill';
+import { usePoolQuote } from '../../hooks/usePoolQuote';
 import { cn } from '../../lib/cn';
 import { Button } from '../primitives/Button';
 import { QuoteDetails } from './QuoteDetails';
@@ -12,8 +12,8 @@ import { SwapPanel } from './SwapPanel';
 type Side = 'buy' | 'sell' | 'swap';
 
 export function TradingPanel({
-  stonkPrice,
-  ethPrice,
+  baseSymbol,
+  quoteSymbol,
   balances,
   connected,
   networkOk,
@@ -22,9 +22,9 @@ export function TradingPanel({
   onSwitchNetwork,
   onSubmit,
 }: {
-  stonkPrice: number | null;
-  ethPrice: number | null;
-  balances: { ETH: number; STONK: number } | null;
+  baseSymbol: string;
+  quoteSymbol: string;
+  balances: { base: number; quote: number } | null;
   connected: boolean;
   networkOk: boolean;
   variant?: 'full' | 'buy-only';
@@ -37,6 +37,8 @@ export function TradingPanel({
   const [amount, setAmount] = useState('');
   const active = variant === 'buy-only' ? 'buy' : side;
   const parsed = parseAmount(amount);
+  const buying = active === 'buy';
+  const { quote, loading, error } = usePoolQuote(active === 'swap' ? 0 : (parsed ?? 0), !buying, slippagePct);
 
   if (active === 'swap') {
     return (
@@ -47,8 +49,8 @@ export function TradingPanel({
         </div>
         <SwapPanel
           embedded
-          stonkPrice={stonkPrice}
-          ethPrice={ethPrice}
+          baseSymbol={baseSymbol}
+          quoteSymbol={quoteSymbol}
           balances={balances}
           connected={connected}
           networkOk={networkOk}
@@ -60,19 +62,15 @@ export function TradingPanel({
     );
   }
 
-  const spend = active === 'buy' ? 'ETH' : 'STONK';
-  const receive = active === 'buy' ? 'STONK' : 'ETH';
-  const priceIn = spend === 'ETH' ? ethPrice : stonkPrice;
-  const priceOut = receive === 'ETH' ? ethPrice : stonkPrice;
-  const balance = balances ? balances[spend] : null;
-  const max = balance == null ? null : spend === 'ETH' ? Math.max(0, balance - GAS_RESERVE_ETH) : balance;
-  const over = parsed != null && max != null && parsed > max + 1e-12;
-  const quote = useMemo(
-    () => quoteSwap({ amountIn: parsed ?? 0, priceIn, priceOut, slippagePct }),
-    [parsed, priceIn, priceOut, slippagePct],
-  );
+  const spend = buying ? quoteSymbol : baseSymbol;
+  const receive = buying ? baseSymbol : quoteSymbol;
+  const balance = balances ? (buying ? balances.quote : balances.base) : null;
+  const over = parsed != null && balance != null && parsed > balance + 1e-12;
+  const display = baseSymbol.startsWith('$') ? baseSymbol : `$${baseSymbol}`;
   const rateLabel =
-    stonkPrice != null && ethPrice != null ? `1 STONK ≈ ${formatToken(stonkPrice / ethPrice)} ETH` : PLACEHOLDER_NUMBER;
+    quote.rate != null && parsed != null && parsed > 0
+      ? `1 ${spend} ≈ ${formatToken(quote.rate)} ${receive}`
+      : PLACEHOLDER_NUMBER;
 
   function submit() {
     if (!networkOk) {
@@ -83,20 +81,34 @@ export function TradingPanel({
       onConnect();
       return;
     }
-    if (parsed == null || parsed <= 0 || quote.amountOut == null || over) return;
+    if (parsed == null || parsed <= 0 || quote.amountOut == null || over || loading) return;
     onSubmit({
       kind: 'swap',
-      title: active === 'buy' ? 'Buy $STONK' : 'Sell $STONK',
+      title: buying ? `Buy ${display}` : `Sell ${display}`,
       summary: `${formatToken(parsed)} ${spend} → ${formatToken(quote.amountOut)} ${receive}`,
       amountLabel: `${formatToken(parsed)} ${spend}`,
       impactPct: quote.impactPct,
       feeLabel: quote.feeUsd == null ? PLACEHOLDER_NUMBER : `$${quote.feeUsd.toFixed(2)}`,
       slippagePct,
-      fill: { type: 'swap', spend, receive, amountIn: parsed, amountOut: quote.amountOut },
+      fill: {
+        type: 'swap',
+        spend: buying ? 'ETH' : 'STONK',
+        receive: buying ? 'STONK' : 'ETH',
+        amountIn: parsed,
+        amountOut: quote.amountOut,
+      },
     });
   }
 
-  const buttonLabel = !networkOk ? 'Switch network' : !connected ? 'Connect wallet' : active === 'buy' ? 'Buy $STONK' : 'Sell $STONK';
+  const buttonLabel = !networkOk
+    ? 'Switch network'
+    : !connected
+      ? 'Connect wallet'
+      : loading
+        ? 'Pricing…'
+        : buying
+          ? `Buy ${display}`
+          : `Sell ${display}`;
 
   return (
     <div className="panel">
@@ -126,17 +138,21 @@ export function TradingPanel({
               key={fraction}
               type="button"
               className="pill"
-              onClick={() => max != null && setAmount(trim(max * fraction))}
+              onClick={() => balance != null && setAmount(trimAmount(balance * fraction))}
             >
               {fraction === 1 ? 'Max' : `${fraction * 100}%`}
             </button>
           ))}
         </div>
       </div>
-      {spend === 'ETH' ? <p className="caption faint">{GAS_RESERVE_ETH} ETH stays back for the network fee.</p> : null}
       {over ? (
         <p className="field-error" role="alert">
           Amount is above your {spend} balance.
+        </p>
+      ) : null}
+      {error ? (
+        <p className="field-error" role="alert">
+          {error}
         </p>
       ) : null}
       <QuoteDetails quote={quote} slippagePct={slippagePct} receiveSymbol={receive} rateLabel={rateLabel} />
@@ -145,7 +161,7 @@ export function TradingPanel({
         size="lg"
         variant={active === 'sell' ? 'sell' : 'buy'}
         onClick={submit}
-        disabled={connected && networkOk && (over || !(parsed && parsed > 0))}
+        disabled={connected && networkOk && (over || loading || !(parsed && parsed > 0))}
       >
         {buttonLabel}
       </Button>
@@ -171,10 +187,4 @@ function SideTabs({ side, onChange }: { side: Side; onChange: (side: Side) => vo
       ))}
     </div>
   );
-}
-
-function trim(value: number): string {
-  if (value >= 1000) return value.toFixed(2);
-  if (value >= 1) return value.toFixed(4);
-  return value.toFixed(6);
 }

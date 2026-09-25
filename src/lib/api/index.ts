@@ -1,16 +1,7 @@
 import { mockFetch } from './client';
-import {
-  createAccount,
-  createActivity,
-  createCommission,
-  createEarnAssets,
-  createHolders,
-  createStaking,
-  createTokenomics,
-  createTokenStats,
-  buildCandles,
-} from './mock';
-import type { ChartTimeframe } from './types';
+import { loadLiveCandle, loadTokenStats } from '../market/chain';
+import { createAccount } from './mock';
+import type { ActivitySnapshot, ChartTimeframe, EarnAsset, HolderSnapshot } from './types';
 
 export type {
   AccountSnapshot,
@@ -33,32 +24,36 @@ export type {
 } from './types';
 
 export { CHART_TIMEFRAMES, PORTFOLIO_RANGES } from './types';
-export { nextActivity } from './mock';
+/** Market reads come from the token contract. `?fault=` still fails a block on purpose. */
 
-/** Typed fetchers. Each one is mock-mode only and can fail via `?fault=`. */
-
-export function fetchTokenStats() {
-  return mockFetch('stats', createTokenStats());
+export async function fetchTokenStats() {
+  return mockFetch('stats', await loadTokenStats());
 }
 
-export function fetchChart(timeframe: ChartTimeframe) {
-  return mockFetch('chart', { timeframe, candles: buildCandles(timeframe) });
+export async function fetchChart(timeframe: ChartTimeframe) {
+  void timeframe;
+  return mockFetch('chart', await loadLiveCandle());
 }
 
-export function fetchHolders() {
-  return mockFetch('holders', createHolders());
+export function fetchHolders(): Promise<HolderSnapshot> {
+  return mockFetch('holders', { segments: [], holders: [], illustrative: false });
 }
 
-export function fetchActivity() {
-  return mockFetch('activity', createActivity());
+export function fetchActivity(): Promise<ActivitySnapshot> {
+  return mockFetch('activity', { items: [], buyPct: 0, sellPct: 0, illustrative: false });
 }
 
 export function fetchStaking() {
-  return mockFetch('staking', createStaking());
+  return mockFetch('staking', {
+    aprPct: null,
+    lockDays: null,
+    totalStaked: null,
+    illustrative: false,
+  });
 }
 
-export function fetchEarn() {
-  return mockFetch('earn', { assets: createEarnAssets() });
+export function fetchEarn(): Promise<{ assets: EarnAsset[] }> {
+  return mockFetch('earn', { assets: [] });
 }
 
 export function fetchPortfolio() {
@@ -67,7 +62,7 @@ export function fetchPortfolio() {
 
 export function fetchTokenomics() {
   return mockFetch('tokenomics', {
-    tokenomics: createTokenomics(),
-    commission: createCommission(),
+    tokenomics: { slices: [], illustrative: false },
+    commission: { accruedUsd: null, epochLabel: 'Not published by this contract', illustrative: false },
   });
 }

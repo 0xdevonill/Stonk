@@ -1,6 +1,6 @@
 import { Lock, Wallet } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
-import { useMarket } from '../context/MarketContext';
+import { useAsset } from '../context/MarketContext';
 import { useWallet } from '../context/WalletContext';
 import { useQuery } from '../hooks/useQuery';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -12,13 +12,12 @@ import { projectedRewards } from '../lib/trade/quote';
 import { Button } from '../components/primitives/Button';
 import { DataBoundary, EmptyState } from '../components/primitives/StateBlock';
 import { BottomSheet } from '../components/overlays/BottomSheet';
-import { tokenMeta } from '../lib/contracts/config';
 
 export function StakePage() {
   usePageTitle('Stake');
   const staking = useQuery('staking', fetchStaking);
   const wallet = useWallet();
-  const market = useMarket();
+  const asset = useAsset();
   const submit = useOrderSubmit();
   const mobile = useIsMobile();
   const [amount, setAmount] = useState('');
@@ -44,9 +43,9 @@ export function StakePage() {
     const daily = rewards.daily ?? 0;
     submit({
       kind: 'stake',
-      title: 'Stake $STONK',
-      summary: `${formatToken(parsed)} ${tokenMeta.symbol} locked`,
-      amountLabel: `${formatToken(parsed)} ${tokenMeta.symbol}`,
+      title: `Stake ${asset.displaySymbol}`,
+      summary: `${formatToken(parsed)} ${asset.symbol} locked`,
+      amountLabel: `${formatToken(parsed)} ${asset.symbol}`,
       impactPct: 0,
       feeLabel: PLACEHOLDER_NUMBER,
       slippagePct: 100,
@@ -61,8 +60,8 @@ export function StakePage() {
     submit({
       kind: 'claim',
       title: 'Claim rewards',
-      summary: `${formatToken(pending)} ${tokenMeta.symbol} estimated rewards`,
-      amountLabel: `${formatToken(pending)} ${tokenMeta.symbol}`,
+      summary: `${formatToken(pending)} ${asset.symbol} estimated rewards`,
+      amountLabel: `${formatToken(pending)} ${asset.symbol}`,
       impactPct: 0,
       feeLabel: PLACEHOLDER_NUMBER,
       slippagePct: 100,
@@ -85,7 +84,7 @@ export function StakePage() {
         />
         <span className="field-hint">Balance {balance == null ? PLACEHOLDER_NUMBER : formatToken(balance)}</span>
       </label>
-      {over ? <p className="field-error">Amount is above your {tokenMeta.symbol} balance.</p> : null}
+      {over ? <p className="field-error">Amount is above your {asset.symbol} balance.</p> : null}
       <dl className="quote-rows">
         {(
           [
@@ -97,13 +96,13 @@ export function StakePage() {
         ).map(([label, value]) => (
           <div key={label}>
             <dt>{label}</dt>
-            <dd className="num">{value == null ? PLACEHOLDER_NUMBER : `${formatToken(value)} ${tokenMeta.symbol}`}</dd>
+            <dd className="num">{value == null ? PLACEHOLDER_NUMBER : `${formatToken(value)} ${asset.symbol}`}</dd>
           </div>
         ))}
       </dl>
-      <p className="caption faint">Estimated, not guaranteed. Priced off the illustrative APR{market.stats ? '' : ''}.</p>
+      <p className="caption faint">This token contract does not publish a staking APR.</p>
       <Button block size="lg" onClick={stake} disabled={Boolean(wallet.account) && (over || !(parsed && parsed > 0))}>
-        {wallet.account ? `Stake ${tokenMeta.displaySymbol}` : 'Connect wallet'}
+        {wallet.account ? `Stake ${asset.displaySymbol}` : 'Connect wallet'}
       </Button>
     </div>
   );
@@ -114,7 +113,7 @@ export function StakePage() {
     <div className="page-wrap has-sticky-action">
       <header className="page-intro">
         <p className="eyebrow">Stake</p>
-        <h1 className="heading-lg">Lock {tokenMeta.displaySymbol}</h1>
+        <h1 className="heading-lg">Lock {asset.displaySymbol}</h1>
       </header>
       <div className="stake-layout">
         {mobile ? null : calculator}
@@ -132,7 +131,7 @@ export function StakePage() {
                 message="You haven't staked yet."
                 action={
                   mobile ? (
-                    <Button onClick={() => setSheet(true)}>{`Stake ${tokenMeta.displaySymbol}`}</Button>
+                    <Button onClick={() => setSheet(true)}>{`Stake ${asset.displaySymbol}`}</Button>
                   ) : undefined
                 }
               />
@@ -140,7 +139,7 @@ export function StakePage() {
               <article className="card">
                 <p className="eyebrow">Your position</p>
                 <p className="data-lg num">{formatToken(staked)}</p>
-                <p className="caption faint">{tokenMeta.symbol} staked</p>
+                <p className="caption faint">{asset.symbol} staked</p>
                 <div className="between">
                   <div>
                     <p className="eyebrow">Pending rewards</p>
@@ -176,7 +175,7 @@ export function StakePage() {
       {mobile ? (
         <>
           <button type="button" className="sticky-action btn btn-primary btn-lg" onClick={() => setSheet(true)}>
-            Stake {tokenMeta.displaySymbol}
+            Stake {asset.displaySymbol}
           </button>
           <BottomSheet open={sheet} title="Stake" onClose={() => setSheet(false)}>
             {calculator}

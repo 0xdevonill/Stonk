@@ -30,7 +30,7 @@ export function FaqList({ items }: { items: { q: string; a: string }[] }) {
 export const homeFaq = [
   {
     q: 'What is Mr.Stonk?',
-    a: 'A trading terminal for $STONK. Quotes, swaps, staking, and holder data share one layout so the numbers stay easy to audit.',
+    a: 'A trading terminal for one token. Its price and swap quotes are read from that contract, so the numbers on the ticket match the pool.',
   },
   {
     q: 'Do you custody funds?',
@@ -46,7 +46,7 @@ export const homeFaq = [
   },
   {
     q: 'Are reward figures guaranteed?',
-    a: 'No. Staking projections use the current illustrative APR and the amount you type. They are estimates, not a promise of return.',
+    a: 'No. This token contract does not publish a staking APR. An empty reward figure is not a promise of return.',
   },
   {
     q: 'What is price impact?',

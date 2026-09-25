@@ -23,11 +23,11 @@ export function useOrderSubmit() {
         apply: () => {
           const address = wallet.account?.address;
           wallet.applyBalances((account) => applyFill(account, draft.fill));
-          if (address) wallet.prependHistory(historyFromFill(address, draft.fill, price));
+          if (address) wallet.prependHistory(historyFromFill(address, draft.fill, price, market.stats?.symbol));
         },
       });
     },
-    [market.stats?.priceUsd, tx, wallet],
+    [market.stats?.priceUsd, market.stats?.symbol, tx, wallet],
   );
 
   return submit;

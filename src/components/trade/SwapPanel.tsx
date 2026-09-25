@@ -1,20 +1,18 @@
 import { ArrowsDownUp } from '@phosphor-icons/react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTradeSettings } from '../../context/TradeSettingsContext';
-import { formatToken, parseAmount, sanitizeAmount, PLACEHOLDER_NUMBER } from '../../lib/format';
-import { GAS_RESERVE_ETH, quoteSwap } from '../../lib/trade/quote';
+import { formatToken, parseAmount, sanitizeAmount, trimAmount, PLACEHOLDER_NUMBER } from '../../lib/format';
 import type { OrderDraft } from '../../lib/trade/fill';
+import { usePoolQuote } from '../../hooks/usePoolQuote';
 import { cn } from '../../lib/cn';
 import { Icon } from '../primitives/Icon';
 import { Button } from '../primitives/Button';
 import { QuoteDetails } from './QuoteDetails';
 import { SlippageControl } from './SlippageControl';
 
-type Symbol = 'STONK' | 'ETH';
-
 export function SwapPanel({
-  stonkPrice,
-  ethPrice,
+  baseSymbol,
+  quoteSymbol,
   balances,
   connected,
   networkOk,
@@ -24,9 +22,9 @@ export function SwapPanel({
   onSwitchNetwork,
   onSubmit,
 }: {
-  stonkPrice: number | null;
-  ethPrice: number | null;
-  balances: { ETH: number; STONK: number } | null;
+  baseSymbol: string;
+  quoteSymbol: string;
+  balances: { base: number; quote: number } | null;
   connected: boolean;
   networkOk: boolean;
   compact?: boolean;
@@ -36,30 +34,24 @@ export function SwapPanel({
   onSubmit: (draft: OrderDraft) => void;
 }) {
   const { slippagePct } = useTradeSettings();
-  const [fromSymbol, setFromSymbol] = useState<Symbol>('ETH');
+  const [payQuote, setPayQuote] = useState(true);
   const [amount, setAmount] = useState('');
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const toSymbol: Symbol = fromSymbol === 'ETH' ? 'STONK' : 'ETH';
-  const priceIn = fromSymbol === 'ETH' ? ethPrice : stonkPrice;
-  const priceOut = toSymbol === 'ETH' ? ethPrice : stonkPrice;
+  const fromSymbol = payQuote ? quoteSymbol : baseSymbol;
+  const toSymbol = payQuote ? baseSymbol : quoteSymbol;
   const parsed = parseAmount(amount);
-  const balance = balances ? balances[fromSymbol] : null;
-  const max =
-    balance == null ? null : fromSymbol === 'ETH' ? Math.max(0, balance - GAS_RESERVE_ETH) : balance;
-  const over = parsed != null && max != null && parsed > max + 1e-12;
-
-  const quote = useMemo(
-    () => quoteSwap({ amountIn: parsed ?? 0, priceIn, priceOut, slippagePct }),
-    [parsed, priceIn, priceOut, slippagePct],
-  );
+  const balance = balances ? (payQuote ? balances.quote : balances.base) : null;
+  const outBalance = balances ? (payQuote ? balances.base : balances.quote) : null;
+  const over = parsed != null && balance != null && parsed > balance + 1e-12;
+  const { quote, loading, error } = usePoolQuote(parsed ?? 0, !payQuote, slippagePct);
 
   const rateLabel =
-    priceIn != null && priceOut != null && priceOut > 0
-      ? `1 ${fromSymbol} ≈ ${formatToken(priceIn / priceOut)} ${toSymbol}`
+    quote.rate != null && parsed != null && parsed > 0
+      ? `1 ${fromSymbol} ≈ ${formatToken(quote.rate)} ${toSymbol}`
       : PLACEHOLDER_NUMBER;
 
   function flip() {
-    setFromSymbol(toSymbol);
+    setPayQuote((current) => !current);
     setAmount('');
   }
 
@@ -72,7 +64,7 @@ export function SwapPanel({
       onConnect();
       return;
     }
-    if (parsed == null || parsed <= 0 || quote.amountOut == null || over) return;
+    if (parsed == null || parsed <= 0 || quote.amountOut == null || over || loading) return;
     onSubmit({
       kind: 'swap',
       title: `Swap ${fromSymbol} for ${toSymbol}`,
@@ -83,15 +75,15 @@ export function SwapPanel({
       slippagePct,
       fill: {
         type: 'swap',
-        spend: fromSymbol,
-        receive: toSymbol,
+        spend: payQuote ? 'ETH' : 'STONK',
+        receive: payQuote ? 'STONK' : 'ETH',
         amountIn: parsed,
         amountOut: quote.amountOut,
       },
     });
   }
 
-  const label = !networkOk ? 'Switch network' : !connected ? 'Connect wallet' : `Swap ${fromSymbol}`;
+  const label = !networkOk ? 'Switch network' : !connected ? 'Connect wallet' : loading ? 'Pricing…' : `Swap ${fromSymbol}`;
 
   return (
     <div className={cn(!embedded && 'panel', compact && 'panel-compact')}>
@@ -108,7 +100,7 @@ export function SwapPanel({
           amount={amount}
           onAmount={setAmount}
           balance={balance}
-          onMax={() => max != null && setAmount(trimAmount(max))}
+          onMax={() => balance != null && setAmount(trimAmount(balance))}
         />
         <button type="button" className="swap-flip" onClick={flip} aria-label="Switch direction">
           <Icon icon={ArrowsDownUp} size={20} />
@@ -116,9 +108,9 @@ export function SwapPanel({
         <TokenRow
           label="To"
           symbol={toSymbol}
-          amount={quote.amountOut == null || !(parsed && parsed > 0) ? '' : trimAmount(quote.amountOut)}
+          amount={loading || quote.amountOut == null || !(parsed && parsed > 0) ? '' : trimAmount(quote.amountOut)}
           readOnly
-          balance={balances ? balances[toSymbol] : null}
+          balance={outBalance}
         />
       </div>
       {over ? (
@@ -126,12 +118,17 @@ export function SwapPanel({
           Amount is above your {fromSymbol} balance.
         </p>
       ) : null}
+      {error ? (
+        <p className="field-error" role="alert">
+          {error}
+        </p>
+      ) : null}
       <button type="button" className="details-toggle" aria-expanded={detailsOpen} onClick={() => setDetailsOpen((value) => !value)}>
         <span>Details</span>
-        <span className="num faint">{rateLabel}</span>
+        <span className="num faint">{loading ? 'Pricing…' : rateLabel}</span>
       </button>
       {detailsOpen ? <QuoteDetails quote={quote} slippagePct={slippagePct} receiveSymbol={toSymbol} rateLabel={rateLabel} /> : null}
-      <Button block size="lg" variant="primary" onClick={submit} disabled={connected && networkOk && (over || !(parsed && parsed > 0))}>
+      <Button block size="lg" variant="primary" onClick={submit} disabled={connected && networkOk && (over || !(parsed && parsed > 0) || loading)}>
         {label}
       </Button>
       <p className="caption faint security-line">We will never ask for your seed phrase.</p>
@@ -149,7 +146,7 @@ function TokenRow({
   readOnly = false,
 }: {
   label: string;
-  symbol: Symbol;
+  symbol: string;
   amount: string;
   onAmount?: (value: string) => void;
   balance: number | null;
@@ -181,10 +178,4 @@ function TokenRow({
       ) : null}
     </div>
   );
-}
-
-function trimAmount(value: number): string {
-  if (value >= 1000) return value.toFixed(2);
-  if (value >= 1) return value.toFixed(4);
-  return value.toFixed(6);
 }
