@@ -20,7 +20,7 @@ export function DocsPage() {
 
       <h2>Wallets</h2>
       <p>
-        Connect is simulated. MetaMask, Rabby, and Coinbase Wallet land on Ethereum. WalletConnect reports Sepolia so
+        Connect is simulated. MetaMask, Rabby, and Coinbase Wallet land on Robinhood Chain. WalletConnect reports Sepolia so
         you can reach the wrong-network state and switch with one button. No seed phrase is requested. No signature is
         requested.
       </p>

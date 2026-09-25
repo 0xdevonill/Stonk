@@ -20,7 +20,7 @@ npm run preview
 
 - Home, Trade, Swap, Stake, Earn, Portfolio, Analytics, Token, and Docs
 - Theme toggle, remembered in local storage and defaulting to the system preference
-- Wallet modal: MetaMask is the recommended path. WalletConnect reports Sepolia so the wrong-network state is reachable, then **Switch to Ethereum**
+- Wallet modal: MetaMask is the recommended path. WalletConnect reports Sepolia so the wrong-network state is reachable, then **Switch to Robinhood Chain**
 - Buy, sell, swap, stake, and claim share one transaction dialog: preparing, waiting for the wallet, confirming, processing, then success. Reject declines the mock prompt. A size whose price impact exceeds slippage ends in the failed state
 
 Orders are simulated. Nothing is broadcast, and the interface will not ask for a seed phrase.
