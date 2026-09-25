@@ -1,0 +1,326 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg-canvas);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: clip;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+::selection {
+  background: var(--stonk-accent-soft);
+  color: var(--text-primary);
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: -48px;
+  z-index: 80;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  top: var(--space-3);
+}
+
+.num,
+.data-lg,
+.data-md,
+.data-sm {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.display-xl,
+.display-lg,
+.heading-lg,
+.heading-md,
+.heading-sm {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.display-xl {
+  font-size: 56px;
+  line-height: 1.05;
+}
+
+.display-lg {
+  font-size: 40px;
+  line-height: 1.1;
+}
+
+.heading-lg {
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.heading-md {
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.heading-sm {
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.body-lg {
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.body-md {
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.caption,
+.eyebrow {
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.data-lg {
+  font-size: 32px;
+  line-height: 1.1;
+  font-weight: 600;
+}
+
+.data-md {
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.data-sm {
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 500;
+}
+
+.muted {
+  color: var(--text-secondary);
+}
+
+.faint {
+  color: var(--text-tertiary);
+}
+
+.text-link {
+  color: var(--stonk-accent);
+  font-weight: 600;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.page-fade {
+  animation: page-in var(--duration-fast) var(--ease-out);
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes flash-up {
+  0% {
+    color: var(--positive-text);
+  }
+  100% {
+    color: var(--text-primary);
+  }
+}
+
+@keyframes flash-down {
+  0% {
+    color: var(--negative-text);
+  }
+  100% {
+    color: var(--text-primary);
+  }
+}
+
+@keyframes draw-check {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pulse-op {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes live-ping {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--positive) 50%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.flash-up {
+  animation: flash-up 400ms linear;
+}
+
+.flash-down {
+  animation: flash-down 400ms linear;
+}
+
+@media (max-width: 767px) {
+  .display-xl {
+    font-size: 36px;
+  }
+
+  .display-lg {
+    font-size: 28px;
+  }
+
+  .heading-lg {
+    font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,143 @@
+/* Mr.Stonk design tokens — spec sections C–G.
+   Components reference these variables only.
+
+   Contrast notes (section X):
+   Spec tertiary #8C8A82 is 3.31:1 on the light canvas and #6E6D68 is 3.82:1 on
+   the dark canvas — short of 4.5:1 for 12px captions. --text-tertiary is the
+   nearest warm gray that clears AA. Spec positive #16A34A and warning #D97706
+   stay the fill/candle colors; --positive-text and --warning-text are the
+   small-text companions that clear 4.5:1. Accent #2F6FED is unchanged.
+*/
+
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  --stonk-accent: #2f6fed;
+  --stonk-accent-soft: #eaf1ff;
+  --on-accent: #ffffff;
+
+  --positive: #16a34a;
+  --positive-text: #15803d;
+  --positive-soft: #e7f6ec;
+  --positive-foreground: #14140f;
+
+  --negative: #dc2626;
+  --negative-text: #dc2626;
+  --negative-soft: #fdecec;
+  --negative-foreground: #ffffff;
+
+  --warning: #d97706;
+  --warning-text: #b45309;
+  --warning-soft: #fef4e6;
+  --warning-foreground: #14140f;
+
+  --info: #2f6fed;
+
+  --bg-canvas: #fafaf9;
+  --bg-surface: #ffffff;
+  --bg-surface-raised: #ffffff;
+  --bg-muted: #f2f2f0;
+
+  --border-subtle: #e7e6e3;
+  --border-default: #dbdad6;
+
+  --text-primary: #14140f;
+  --text-secondary: #5c5b54;
+  --text-tertiary: #6e6c64;
+
+  --shadow-sm: 0 1px 2px rgba(20, 20, 15, 0.04);
+  --shadow-md: 0 4px 12px rgba(20, 20, 15, 0.06);
+  --shadow-lg: 0 12px 32px rgba(20, 20, 15, 0.1);
+  --inner-highlight: 0 0 0 transparent;
+  --grid-line: rgba(20, 20, 15, 0.045);
+  --skeleton-base: #f2f2f0;
+  --skeleton-sheen: #e7e6e3;
+  --focus-ring: var(--stonk-accent);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --stonk-accent: #2f6fed;
+  --stonk-accent-soft: #152238;
+  --on-accent: #ffffff;
+
+  --positive: #3dd68c;
+  --positive-text: #3dd68c;
+  --positive-soft: rgba(61, 214, 140, 0.14);
+  --positive-foreground: #0a0a0b;
+
+  --negative: #ff6b6b;
+  --negative-text: #ff6b6b;
+  --negative-soft: rgba(255, 107, 107, 0.14);
+  --negative-foreground: #0a0a0b;
+
+  --warning: #f5a623;
+  --warning-text: #f5a623;
+  --warning-soft: rgba(245, 166, 35, 0.14);
+  --warning-foreground: #0a0a0b;
+
+  --info: #2f6fed;
+
+  --bg-canvas: #0a0a0b;
+  --bg-surface: #131316;
+  --bg-surface-raised: #1b1b1f;
+  --bg-muted: #1e1e22;
+
+  --border-subtle: #232327;
+  --border-default: #2e2e33;
+
+  --text-primary: #f5f5f3;
+  --text-secondary: #a6a5a0;
+  --text-tertiary: #8a8983;
+
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --inner-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --grid-line: rgba(255, 255, 255, 0.035);
+  --skeleton-base: #1e1e22;
+  --skeleton-sheen: #2a2a2e;
+  --focus-ring: var(--stonk-accent);
+}
+
+:root {
+  --font-display: 'Inter Tight', -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --nav-height: 72px;
+  --tabbar-height: 64px;
+  --rail-width: 400px;
+  --container: 1440px;
+  --trade-max: 1920px;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --nav-height: 60px;
+  }
+}
