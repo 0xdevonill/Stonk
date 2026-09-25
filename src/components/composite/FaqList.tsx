@@ -42,7 +42,7 @@ export const homeFaq = [
   },
   {
     q: 'Which network do I need?',
-    a: 'The configured network is Ethereum. If a wallet reports somewhere else, the terminal stops and asks you to switch before you confirm.',
+    a: 'The configured network is Robinhood Chain. If a wallet reports somewhere else, the terminal stops and asks you to switch before you confirm.',
   },
   {
     q: 'Are reward figures guaranteed?',
