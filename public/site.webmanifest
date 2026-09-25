@@ -1,0 +1,17 @@
+{
+  "name": "Mr.Stonk",
+  "short_name": "Mr.Stonk",
+  "description": "The trading terminal for the internet's favorite asset class.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0A0B",
+  "theme_color": "#0A0A0B",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
