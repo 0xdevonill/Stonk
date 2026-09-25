@@ -34,7 +34,7 @@ export function QuoteDetails({
         </dd>
       </div>
       <div>
-        <dt>Network fee</dt>
+        <dt>Pool fee</dt>
         <dd className="num">{quote.feeUsd == null ? PLACEHOLDER_NUMBER : formatPrice(quote.feeUsd)}</dd>
       </div>
       <div>

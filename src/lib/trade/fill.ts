@@ -41,7 +41,7 @@ export function applyFill(account: Account, fill: Fill): Account {
   return { ...account, balances, staked, pendingRewards };
 }
 
-export function historyFromFill(address: string, fill: Fill, priceUsd: number): ActivityItem {
+export function historyFromFill(address: string, fill: Fill, priceUsd: number, symbol = 'TOKEN'): ActivityItem {
   const kind: ActivityKind =
     fill.type === 'swap' ? (fill.receive === 'STONK' ? 'buy' : 'sell') : fill.type === 'claim' ? 'claim' : fill.type;
   const amount = fill.type === 'swap' ? (fill.receive === 'STONK' ? fill.amountOut : fill.amountIn) : fill.amount;
@@ -50,7 +50,7 @@ export function historyFromFill(address: string, fill: Fill, priceUsd: number): 
     kind,
     address,
     amount,
-    symbol: 'STONK',
+    symbol,
     valueUsd: amount * priceUsd,
     time: Date.now(),
   };

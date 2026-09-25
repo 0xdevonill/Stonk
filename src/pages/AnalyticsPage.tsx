@@ -26,7 +26,7 @@ export function AnalyticsPage() {
       <header className="page-intro">
         <p className="eyebrow">Analytics</p>
         <h1 className="heading-lg">Holders</h1>
-        <p className="body-md muted">Distribution, concentration, and the buy against sell mix. Illustrative.</p>
+        <p className="body-md muted">Holder and print indexes appear only when this contract publishes them.</p>
       </header>
       <div className="grid-2 grid-2-lg">
         <DataBoundary loading={holders.loading} error={holders.error} onRetry={holders.reload} skeleton={<div className="card skeleton-block" />}>
@@ -54,7 +54,7 @@ export function AnalyticsPage() {
                 <Icon icon={ArrowDown} size={20} /> Sell {formatPct(activity.data?.sellPct ?? null, false)}
               </span>
             </div>
-            <p className="caption faint">Counted from the illustrative print list, not a full chain index.</p>
+            <p className="caption faint">Counted from prints this contract exposes. An empty bar means none were published.</p>
           </article>
         </DataBoundary>
       </div>

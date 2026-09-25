@@ -1,20 +1,25 @@
 export interface TokenStats {
   symbol: string;
   name: string;
+  quoteSymbol: string;
+  quoteToken: string;
+  curveAddress: string;
   priceUsd: number;
-  change24hPct: number;
-  change24hUsd: number;
-  marketCapUsd: number;
-  liquidityUsd: number;
-  volume24hUsd: number;
-  holders: number;
-  transactions24h: number;
-  stakedAmount: number;
-  ethPriceUsd: number;
-  ethChange24hPct: number;
+  quotePriceUsd: number | null;
+  change24hPct: number | null;
+  change24hUsd: number | null;
+  marketCapUsd: number | null;
+  liquidityUsd: number | null;
+  volume24hUsd: number | null;
+  holders: number | null;
+  transactions24h: number | null;
+  stakedAmount: number | null;
+  ethPriceUsd: number | null;
+  ethChange24hPct: number | null;
+  takerFeeBps: number | null;
   sparkline: number[];
   totalSupply: number;
-  illustrative: true;
+  illustrative: boolean;
 }
 
 export interface Candle {
@@ -47,7 +52,7 @@ export interface DistributionSegment {
 export interface HolderSnapshot {
   segments: DistributionSegment[];
   holders: HolderRow[];
-  illustrative: true;
+  illustrative: boolean;
 }
 
 export type ActivityKind = 'buy' | 'sell' | 'stake' | 'unstake' | 'transfer' | 'claim';
@@ -66,14 +71,14 @@ export interface ActivitySnapshot {
   items: ActivityItem[];
   buyPct: number;
   sellPct: number;
-  illustrative: true;
+  illustrative: boolean;
 }
 
 export interface StakingMarket {
-  aprPct: number;
-  lockDays: number;
-  totalStaked: number;
-  illustrative: true;
+  aprPct: number | null;
+  lockDays: number | null;
+  totalStaked: number | null;
+  illustrative: boolean;
 }
 
 export type EarnEligibility = 'eligible' | 'ineligible' | 'soon';
@@ -97,13 +102,13 @@ export interface TokenomicsSlice {
 
 export interface TokenomicsSnapshot {
   slices: TokenomicsSlice[];
-  illustrative: true;
+  illustrative: boolean;
 }
 
 export interface CommissionSnapshot {
-  accruedUsd: number;
+  accruedUsd: number | null;
   epochLabel: string;
-  illustrative: true;
+  illustrative: boolean;
 }
 
 export type PortfolioRange = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL';
@@ -131,7 +136,7 @@ export interface AccountSnapshot {
   tokenized: TokenizedPosition[];
   history: ActivityItem[];
   performance: Record<PortfolioRange, PerformancePoint[]>;
-  illustrative: true;
+  illustrative: boolean;
 }
 
 export type FaultKey =

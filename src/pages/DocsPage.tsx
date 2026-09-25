@@ -7,13 +7,15 @@ export function DocsPage() {
       <p className="eyebrow">Docs</p>
       <h1 className="heading-lg">How to read the terminal</h1>
       <p className="body-lg muted">
-        Mr.Stonk is a trading interface for $STONK. This build is a complete UI on illustrative data. It does not
-        broadcast transactions.
+        Mr.Stonk is a trading interface for one token. Price, supply, and swap quotes are read from that token&apos;s
+        contract on Robinhood Chain. Wallet confirms in this build are still simulated and are not broadcast.
       </p>
 
       <h2 id="status">Status</h2>
       <p>
-        Quotes, holder tables, and reward rates are fixtures from the mock data layer. They can fail on purpose with a
+        The price is the graduated pool&apos;s spot, converted with the quote token&apos;s USDG pool. Swap output comes
+        from the chain quoter. Holder tables and staking rates stay empty when the contract does not publish them. A
+        block can still fail on purpose with a
         <span className="num"> ?fault=chart </span>
         style query, and every failed block keeps its own retry.
       </p>
@@ -47,9 +49,8 @@ export function DocsPage() {
 
       <h2 id="terms">Terms</h2>
       <p>
-        This interface is a design implementation. Figures marked illustrative are not quotes. Rewards marked estimated
-        are not owed. If a later deployment connects to a chain, those terms belong in a separate agreement — not in a
-        loading message.
+        Pool prices and swap quotes are chain reads, not an offer. Rewards are not published by this token and are not
+        owed. A simulated wallet confirm is not a mainnet transaction.
       </p>
     </article>
   );

@@ -2,18 +2,19 @@ import { useState } from 'react';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { usePanelProps } from '../hooks/usePanelProps';
 import { useIsMobile } from '../hooks/useMediaQuery';
-import { tokenMeta } from '../lib/contracts/config';
+import { useAsset } from '../context/MarketContext';
 import { SwapPanel } from '../components/trade/SwapPanel';
 import { BottomSheet } from '../components/overlays/BottomSheet';
 
 export function SwapPage() {
   usePageTitle('Swap');
   const panel = usePanelProps();
+  const asset = useAsset();
   const mobile = useIsMobile();
   const [sheet, setSheet] = useState(false);
   const props = {
-    stonkPrice: panel.stonkPrice,
-    ethPrice: panel.ethPrice,
+    baseSymbol: panel.baseSymbol,
+    quoteSymbol: panel.quoteSymbol,
     balances: panel.balances,
     connected: panel.connected,
     networkOk: panel.networkOk,
@@ -26,7 +27,7 @@ export function SwapPage() {
     <div className="swap-page has-sticky-action">
       <div className="swap-intro">
         <p className="eyebrow">Swap</p>
-        <h1 className="heading-lg">Exchange {tokenMeta.displaySymbol}</h1>
+        <h1 className="heading-lg">Exchange {asset.displaySymbol}</h1>
         <p className="body-md muted">Same inputs as the trade ticket. Rate, impact, and fee stay one row away from the button.</p>
       </div>
       {mobile ? (

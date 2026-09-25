@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { contracts, tokenMeta } from '../../lib/contracts/config';
+import { contracts } from '../../lib/contracts/config';
+import { useAsset } from '../../context/MarketContext';
 import { formatAddress } from '../../lib/format';
 import { Lockup } from '../brand/Logo';
 import { CopyButton } from '../primitives/CopyButton';
@@ -36,6 +37,7 @@ const columns = [
 ] as const;
 
 export function Footer() {
+  const asset = useAsset();
   return (
     <footer className="footer">
       <div className="container footer-grid">
@@ -43,7 +45,7 @@ export function Footer() {
           <Lockup />
           <p className="body-md muted">The trading terminal for the internet&apos;s favorite asset class.</p>
           <p className="caption faint">
-            {tokenMeta.displaySymbol} · {contracts.chainName} ·{' '}
+            {asset.displaySymbol} · {contracts.chainName} ·{' '}
             <span className="num">{formatAddress(contracts.tokenAddress)}</span>
             <CopyButton value={contracts.tokenAddress} label="Copy token address" />
           </p>
@@ -63,8 +65,8 @@ export function Footer() {
       </div>
       <div className="container footer-bottom">
         <p className="caption faint">
-          This build simulates orders. No transaction is broadcast. Figures are illustrative, not a quote, yield, or
-          promise. We will never ask for your seed phrase.
+          Price and swap quotes are read from the token pool. Wallet confirms in this build are simulated and are not
+          broadcast. We will never ask for your seed phrase.
         </p>
         <p className="caption faint">© {new Date().getFullYear()} Mr.Stonk</p>
       </div>

@@ -12,8 +12,8 @@ import {
   fetchHolders,
   type ChartTimeframe,
 } from '../lib/api';
-import { tokenMeta } from '../lib/contracts/config';
-import { formatAddress, formatCompact, formatPct } from '../lib/format';
+import { useAsset } from '../context/MarketContext';
+import { formatAddress, formatCompact, formatPct, formatPrice } from '../lib/format';
 import { cn } from '../lib/cn';
 import { Change } from '../components/data/Change';
 import { ChartFrame } from '../components/data/Chart';
@@ -30,6 +30,7 @@ import { contracts } from '../lib/contracts/config';
 export function TradePage() {
   usePageTitle('Trade');
   const market = useMarket();
+  const asset = useAsset();
   const panel = usePanelProps();
   const mobile = useIsMobile();
   const [timeframe, setTimeframe] = useState<ChartTimeframe>('1D');
@@ -45,11 +46,11 @@ export function TradePage() {
   const last = candles[candles.length - 1];
   const low = candles.reduce((min, candle) => Math.min(min, candle.low), Number.POSITIVE_INFINITY);
   const high = candles.reduce((max, candle) => Math.max(max, candle.high), Number.NEGATIVE_INFINITY);
-  const summary = `${tokenMeta.displaySymbol} ${mode} chart. Current illustrative price ${stats ? formatCompact(stats.priceUsd) : 'unavailable'}. 24 hour change ${formatPct(stats?.change24hPct ?? null)}. Range ${Number.isFinite(low) ? low.toFixed(4) : '--'} to ${Number.isFinite(high) ? high.toFixed(4) : '--'}.`;
+  const summary = `${asset.displaySymbol} ${mode} chart. Pool price ${stats ? formatPrice(stats.priceUsd) : 'unavailable'}. 24 hour change ${formatPct(stats?.change24hPct ?? null)}. Range ${Number.isFinite(low) ? formatPrice(low) : '--'} to ${Number.isFinite(high) ? formatPrice(high) : '--'}.`;
 
   const panelProps = {
-    stonkPrice: panel.stonkPrice,
-    ethPrice: panel.ethPrice,
+    baseSymbol: panel.baseSymbol,
+    quoteSymbol: panel.quoteSymbol,
     balances: panel.balances,
     connected: panel.connected,
     networkOk: panel.networkOk,
@@ -69,7 +70,7 @@ export function TradePage() {
       <section className="trade-main">
         <header className="pair-head card">
           <div>
-            <p className="eyebrow">{tokenMeta.displaySymbol} / USD</p>
+            <p className="eyebrow">{asset.displaySymbol} / USD</p>
             <div className="price-main">
               <p className="data-lg">
                 <RollingNumber value={stats?.priceUsd ?? null} flash />
@@ -77,7 +78,9 @@ export function TradePage() {
               <Change value={stats?.change24hPct ?? null} />
             </div>
           </div>
-          <p className="caption faint">Illustrative quote · {contracts.chainName}</p>
+          <p className="caption faint">
+            Pool price · {asset.quoteSymbol ? `${asset.symbol}/${asset.quoteSymbol}` : contracts.chainName}
+          </p>
         </header>
 
         <div className="card chart-card">
@@ -109,7 +112,14 @@ export function TradePage() {
             ))}
           </div>
           {tab === 'holders' ? (
-            <DataBoundary loading={holders.loading} error={holders.error} onRetry={holders.reload} skeleton={<div className="skeleton-block" />}>
+            <DataBoundary
+              loading={holders.loading}
+              error={holders.error}
+              empty={(holders.data?.holders.length ?? 0) === 0}
+              onRetry={holders.reload}
+              skeleton={<div className="skeleton-block" />}
+              emptyState={<EmptyState icon={Pulse} message="This contract does not publish a holder index." />}
+            >
               <DataTable
                 caption="Top holders"
                 rows={(holders.data?.holders ?? []).slice(0, 8)}
@@ -151,7 +161,7 @@ export function TradePage() {
               </div>
               <div>
                 <dt>Last candle close</dt>
-                <dd className="num">{last ? last.close.toFixed(4) : '--'}</dd>
+                <dd className="num">{last ? formatPrice(last.close) : '--'}</dd>
               </div>
             </dl>
           ) : null}
@@ -161,7 +171,7 @@ export function TradePage() {
       {mobile ? (
         <>
           <button type="button" className="sticky-action btn btn-primary btn-lg" onClick={() => setSheet(true)}>
-            Trade {tokenMeta.displaySymbol}
+            Trade {asset.displaySymbol}
           </button>
           <BottomSheet open={sheet} title="Trade" onClose={() => setSheet(false)}>
             <TradingPanel {...panelProps} />

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Wallet } from '@phosphor-icons/react';
-import { useMarket } from '../context/MarketContext';
+import { useAsset, useMarket } from '../context/MarketContext';
 import { useWallet } from '../context/WalletContext';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { PORTFOLIO_RANGES, type PortfolioRange } from '../lib/api';
@@ -23,38 +23,22 @@ export function PortfolioPage() {
   const [range, setRange] = useState<PortfolioRange>('1M');
   const [tab, setTab] = useState<'holdings' | 'staked' | 'tokenized' | 'history'>('holdings');
   const account = wallet.account;
+  const asset = useAsset();
   const price = market.stats?.priceUsd ?? null;
-  const eth = market.stats?.ethPriceUsd ?? null;
+  const quotePrice = market.stats?.quotePriceUsd ?? null;
 
   const totals = useMemo(() => {
-    if (!account || price == null || eth == null) return { total: null as number | null, pnl: null as number | null };
+    if (!account || price == null) return { total: null as number | null, pnl: null as number | null };
     const stonk = account.balances.STONK * price;
-    const ether = account.balances.ETH * eth;
+    const quote = quotePrice == null ? 0 : account.balances.ETH * quotePrice;
     const staked = account.staked * price;
-    const total = stonk + ether + staked;
-    const change = market.stats?.change24hPct ?? 0;
-    const pnl = stonk * (change / 100);
+    const total = stonk + quote + staked;
+    const change = market.stats?.change24hPct;
+    const pnl = change == null ? null : stonk * (change / 100);
     return { total, pnl };
-  }, [account, price, eth, market.stats?.change24hPct]);
+  }, [account, price, quotePrice, market.stats?.change24hPct]);
 
-  const candles: Candle[] = useMemo(() => {
-    const series = account?.performance[range] ?? [];
-    if (!series.length || totals.total == null) return [];
-    const last = series[series.length - 1]?.value || 1;
-    const scale = totals.total / last;
-    return series.map((point, index) => {
-      const value = point.value * scale;
-      const prev = index === 0 ? value : series[index - 1].value * scale;
-      return {
-        time: point.time,
-        open: prev,
-        close: value,
-        high: Math.max(prev, value),
-        low: Math.min(prev, value),
-        volume: 0,
-      };
-    });
-  }, [account, range, totals.total]);
+  const candles: Candle[] = [];
 
   if (!account && !wallet.accountLoading) {
     return (
@@ -105,7 +89,7 @@ export function PortfolioPage() {
           <ChartFrame
             candles={candles}
             mode="line"
-            summary={`Portfolio illustrative value ${formatUsd(totals.total)}, 24 hour change ${formatPct(pnlPct)}.`}
+            summary={`Portfolio value ${formatUsd(totals.total)} at the pool price, 24 hour change ${formatPct(pnlPct)}.`}
           />
         </div>
         <div className="seg" role="tablist" aria-label="Portfolio sections">
@@ -126,8 +110,8 @@ export function PortfolioPage() {
           <DataTable
             caption="Holdings"
             rows={[
-              { id: 'STONK', name: 'Stonk', amount: account.balances.STONK, value: price == null ? null : account.balances.STONK * price, change: market.stats?.change24hPct ?? null },
-              { id: 'ETH', name: 'Ether', amount: account.balances.ETH, value: eth == null ? null : account.balances.ETH * eth, change: market.stats?.ethChange24hPct ?? null },
+              { id: 'TOKEN', name: asset.name, amount: account.balances.STONK, value: price == null ? null : account.balances.STONK * price, change: market.stats?.change24hPct ?? null },
+              { id: 'QUOTE', name: asset.quoteSymbol || 'Quote', amount: account.balances.ETH, value: quotePrice == null ? null : account.balances.ETH * quotePrice, change: null },
             ]}
             rowKey={(row) => row.id}
             columns={[
@@ -157,7 +141,7 @@ export function PortfolioPage() {
               message="You haven't staked yet."
               action={
                 <Link to="/stake" className="btn btn-primary btn-md">
-                  Stake $STONK
+                  Stake {asset.displaySymbol}
                 </Link>
               }
             />

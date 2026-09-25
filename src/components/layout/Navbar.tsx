@@ -18,6 +18,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useToast } from '../../context/ToastContext';
 import { useWallet } from '../../context/WalletContext';
 import { contracts } from '../../lib/contracts/config';
+import { useAsset } from '../../context/MarketContext';
 import { formatAddress, formatToken } from '../../lib/format';
 import { cn } from '../../lib/cn';
 import { Identicon } from '../brand/Identicon';
@@ -42,6 +43,7 @@ const secondary = [
 export function Navbar({ menuOpen, onMenu }: { menuOpen: boolean; onMenu: () => void }) {
   const { theme, toggleTheme } = useTheme();
   const wallet = useWallet();
+  const asset = useAsset();
   const { push } = useToast();
   const [menu, setMenu] = useState<'more' | 'account' | null>(null);
 
@@ -132,11 +134,11 @@ export function Navbar({ menuOpen, onMenu }: { menuOpen: boolean; onMenu: () => 
                   </div>
                   <dl className="quote-rows">
                     <div>
-                      <dt>ETH</dt>
+                      <dt>{asset.quoteSymbol || 'Quote'}</dt>
                       <dd className="num">{formatToken(wallet.account.balances.ETH)}</dd>
                     </div>
                     <div>
-                      <dt>$STONK</dt>
+                      <dt>{asset.displaySymbol}</dt>
                       <dd className="num">{formatToken(wallet.account.balances.STONK)}</dd>
                     </div>
                   </dl>

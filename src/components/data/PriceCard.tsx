@@ -3,7 +3,7 @@ import { Skeleton } from '../primitives/Skeleton';
 import { Change } from './Change';
 import { RollingNumber } from './RollingNumber';
 import { Sparkline } from './Sparkline';
-import { tokenMeta } from '../../lib/contracts/config';
+import { useAsset } from '../../context/MarketContext';
 
 export function PriceCard({
   price,
@@ -34,12 +34,13 @@ export function PriceCard({
   }
 
   const direction = changePct != null && changePct < 0 ? 'negative' : 'positive';
+  const asset = useAsset();
 
   return (
     <article className="price-card" aria-live="polite">
       <div className="between">
-        <p className="eyebrow">{tokenMeta.displaySymbol}</p>
-        <Badge tone="neutral">Illustrative</Badge>
+        <p className="eyebrow">{asset.displaySymbol}</p>
+        <Badge tone="neutral">Live</Badge>
       </div>
       <div className="price-main">
         <p className="data-lg">
@@ -48,7 +49,9 @@ export function PriceCard({
         <Change value={changePct} />
       </div>
       <Sparkline points={sparkline} tone={direction === 'negative' ? 'negative' : 'accent'} />
-      <p className="caption faint">Live quote · figures are illustrative</p>
+      <p className="caption faint">
+        {asset.quoteSymbol ? `Pool price · ${asset.symbol}/${asset.quoteSymbol}` : 'Pool price'}
+      </p>
     </article>
   );
 }
