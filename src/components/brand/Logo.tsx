@@ -1,25 +1,19 @@
 import { cn } from '../../lib/cn';
 
-export function Mark({ size = 28, className }: { size?: number; className?: string }) {
+export function TokenLogo({ size = 28, className }: { size?: number; className?: string }) {
   return (
-    <svg
-      className={className}
+    <img
+      className={cn('token-logo', className)}
+      src="/mr-stonk.png"
+      alt=""
       width={size}
       height={size}
-      viewBox="0 0 32 32"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path d="M6 26V4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-      <path
-        d="M6 8.5 16 18.5 26 8.5V30"
-        stroke="currentColor"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    />
   );
+}
+
+export function Mark({ size = 28, className }: { size?: number; className?: string }) {
+  return <TokenLogo size={size} className={className} />;
 }
 
 export function Wordmark({ className }: { className?: string }) {

@@ -68,6 +68,19 @@
   transform: translateY(0.02em);
 }
 
+.token-logo {
+  display: block;
+  object-fit: contain;
+  flex: none;
+  border-radius: 8px;
+}
+
+.with-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .nav-links {
   display: flex;
   align-items: center;

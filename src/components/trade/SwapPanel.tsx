@@ -9,6 +9,7 @@ import { Icon } from '../primitives/Icon';
 import { Button } from '../primitives/Button';
 import { QuoteDetails } from './QuoteDetails';
 import { SlippageControl } from './SlippageControl';
+import { TokenLogo } from '../brand/Logo';
 
 export function SwapPanel({
   baseSymbol,
@@ -97,6 +98,7 @@ export function SwapPanel({
         <TokenRow
           label="From"
           symbol={fromSymbol}
+          showLogo={fromSymbol === baseSymbol}
           amount={amount}
           onAmount={setAmount}
           balance={balance}
@@ -108,6 +110,7 @@ export function SwapPanel({
         <TokenRow
           label="To"
           symbol={toSymbol}
+          showLogo={toSymbol === baseSymbol}
           amount={loading || quote.amountOut == null || !(parsed && parsed > 0) ? '' : trimAmount(quote.amountOut)}
           readOnly
           balance={outBalance}
@@ -139,6 +142,7 @@ export function SwapPanel({
 function TokenRow({
   label,
   symbol,
+  showLogo = false,
   amount,
   onAmount,
   balance,
@@ -147,6 +151,7 @@ function TokenRow({
 }: {
   label: string;
   symbol: string;
+  showLogo?: boolean;
   amount: string;
   onAmount?: (value: string) => void;
   balance: number | null;
@@ -160,7 +165,10 @@ function TokenRow({
         <span className="caption faint num">Balance {balance == null ? PLACEHOLDER_NUMBER : formatToken(balance)}</span>
       </div>
       <div className="token-row-main">
-        <span className="token-chip">{symbol}</span>
+        <span className="token-chip">
+          {showLogo ? <TokenLogo size={22} /> : null}
+          {symbol}
+        </span>
         <input
           className="token-input num"
           inputMode="decimal"

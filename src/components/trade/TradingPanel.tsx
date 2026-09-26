@@ -8,6 +8,7 @@ import { Button } from '../primitives/Button';
 import { QuoteDetails } from './QuoteDetails';
 import { SlippageControl } from './SlippageControl';
 import { SwapPanel } from './SwapPanel';
+import { TokenLogo } from '../brand/Logo';
 
 type Side = 'buy' | 'sell' | 'swap';
 
@@ -122,7 +123,10 @@ export function TradingPanel({
           <span className="caption faint num">Balance {balance == null ? PLACEHOLDER_NUMBER : formatToken(balance)}</span>
         </div>
         <div className="token-row-main">
-          <span className="token-chip">{spend}</span>
+          <span className="token-chip">
+            {spend === baseSymbol ? <TokenLogo size={22} /> : null}
+            {spend}
+          </span>
           <input
             className="token-input num"
             inputMode="decimal"

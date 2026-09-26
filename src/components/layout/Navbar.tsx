@@ -53,7 +53,7 @@ export function Navbar({ menuOpen, onMenu }: { menuOpen: boolean; onMenu: () => 
     <header className="nav">
       <div className="nav-inner">
         <NavLink to="/" className="brand" aria-label="Mr.Stonk home" onClick={close}>
-          <Lockup markSize={26} />
+          <Lockup markSize={40} />
         </NavLink>
 
         <nav className="nav-links" aria-label="Primary">
