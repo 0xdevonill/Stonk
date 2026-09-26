@@ -4,7 +4,7 @@ function readEnv(name: keyof ImportMetaEnv, fallback: string): string {
 }
 
 /** Chain defaults. The traded token is read from the contract; these are the Robinhood Chain endpoints around it. */
-const DEFAULT_TOKEN = '0x1Ad69dDD9D98dD71b6211339A1801fD128A3925D';
+const DEFAULT_TOKEN = '0x0000000000000000000000000000000000000000';
 const DEFAULT_STAKING = '0x000000000000000000000000000000000000571C';
 const DEFAULT_QUOTER = '0x8dc178efb8111bb0973dd9d722ebeff267c98f94';
 const DEFAULT_STATE_VIEW = '0xf3334192d15450cdd385c8b70e03f9a6bd9e673b';
