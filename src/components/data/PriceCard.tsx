@@ -4,6 +4,7 @@ import { Change } from './Change';
 import { RollingNumber } from './RollingNumber';
 import { Sparkline } from './Sparkline';
 import { useAsset } from '../../context/MarketContext';
+import { TokenLogo } from '../brand/Logo';
 
 export function PriceCard({
   price,
@@ -39,7 +40,10 @@ export function PriceCard({
   return (
     <article className="price-card" aria-live="polite">
       <div className="between">
-        <p className="eyebrow">{asset.displaySymbol}</p>
+        <p className="eyebrow with-logo">
+          <TokenLogo size={22} />
+          {asset.displaySymbol}
+        </p>
         <Badge tone="neutral">Live</Badge>
       </div>
       <div className="price-main">

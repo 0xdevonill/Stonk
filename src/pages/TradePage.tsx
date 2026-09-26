@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowsOut, Pulse } from '@phosphor-icons/react';
-import { useMarket } from '../context/MarketContext';
+import { useAsset, useMarket } from '../context/MarketContext';
 import { useQuery } from '../hooks/useQuery';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { usePanelProps } from '../hooks/usePanelProps';
@@ -12,7 +12,6 @@ import {
   fetchHolders,
   type ChartTimeframe,
 } from '../lib/api';
-import { useAsset } from '../context/MarketContext';
 import { formatAddress, formatCompact, formatPct, formatPrice } from '../lib/format';
 import { cn } from '../lib/cn';
 import { Change } from '../components/data/Change';
@@ -26,6 +25,7 @@ import { TradingPanel } from '../components/trade/TradingPanel';
 import { ActivityFeed } from '../components/composite/ActivityFeed';
 import { BottomSheet } from '../components/overlays/BottomSheet';
 import { contracts } from '../lib/contracts/config';
+import { TokenLogo } from '../components/brand/Logo';
 
 export function TradePage() {
   usePageTitle('Trade');
@@ -70,7 +70,10 @@ export function TradePage() {
       <section className="trade-main">
         <header className="pair-head card">
           <div>
-            <p className="eyebrow">{asset.displaySymbol} / USD</p>
+            <p className="eyebrow with-logo">
+              <TokenLogo size={22} />
+              {asset.displaySymbol} / USD
+            </p>
             <div className="price-main">
               <p className="data-lg">
                 <RollingNumber value={stats?.priceUsd ?? null} flash />

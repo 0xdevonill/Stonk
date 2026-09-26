@@ -10,6 +10,7 @@ import { PriceCard } from '../components/data/PriceCard';
 import { DataBoundary } from '../components/primitives/StateBlock';
 import { CopyButton } from '../components/primitives/CopyButton';
 import { TokenomicsChart } from '../components/composite/TokenomicsChart';
+import { TokenLogo } from '../components/brand/Logo';
 
 const utility = [
   { title: 'Trade', body: 'Candles, a ticket, and the holder tape on one screen.', href: '/trade' },
@@ -29,7 +30,10 @@ export function TokenPage() {
     <Container className="stack page-wrap">
       <header className="page-intro">
         <p className="eyebrow">Token</p>
-        <h1 className="heading-lg">{asset.name}</h1>
+        <h1 className="heading-lg with-logo">
+          <TokenLogo size={48} />
+          {asset.name}
+        </h1>
         <p className="body-lg muted measure">
           {asset.displaySymbol} is the asset this terminal reads from {contracts.chainName}. Supply, the curve, and the
           pool price come from that contract.
